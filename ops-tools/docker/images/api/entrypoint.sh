@@ -2,7 +2,7 @@
 
 echo ***** Start app  *****
 
-if [ $DEV_MOD == "YES" ]
+if [ $ENV == "local" ]
 then
   echo ***** In dev mod  *****
   npm run dev

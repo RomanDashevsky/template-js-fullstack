@@ -1,20 +1,55 @@
 version: '3'
 
+x-db-settings: &db-settings
+  DB_NAME: 'bookreader'
+  DB_USERNAME: 'root'
+  DB_PASSWORD: 'root'
+  DB_HOST: 'db'
+  DB_PORT: '3306'
+
+x-env: &env
+  ENV: 'local'
+
 services:
+  nginx:
+    build: ./images/nginx
+    args:
+      SERVER_NAME: app.local
+      NGINX_REMOTE_PORT: 8080
+      <<: *env
+    ports:
+      - '8080:80'
+    volumes:
+      - ../../cli:/var/www/cli
+    networks:
+      - app_net
+
   api:
     build: ./images/api
     environment:
-      - DEV_MOD=YES
+      <<: *env
+      <<: *db-settings
     volumes:
       - ../../api:/var/www/api
     networks:
-      - node
+      - app_net
     ports:
-      - "3333:3333"
+      - '8888:8888'
       - '9229:9229'
 
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - '3366:3306'
+    volumes:
+      - ../../data/db:/var/lib/mysql:cached
+    networks:
+      - app_net
+
 networks:
-  node:
+  app_net:
     ipam:
       config:
         - subnet: 172.30.0.0/24
